@@ -58,17 +58,17 @@ struct Vector2 handleInput(WINDOW *win) {
 }
 
 bool checkGameOver(WINDOW *win, struct Vector2 *snake, int snakeLength) {
-    struct Vector2 head = snake[snakeLength - 1];
+    struct Vector2 head = snake[0];
 
     if(head.x >= getmaxx(win) || head.x <= 0 || head.y >= getmaxy(win) || head.y <= 0) {
         return true;
     }
 
-    for(int i = 0; i < snakeLength - 1; i++) {
-        if(head.x == snake[i].x && head.y == snake[i].y) {
-            return true;
-        }
-    }
+    // for(int i = 1; i < snakeLength; i++) {
+    //     if(head.x == snake[i].x && head.y == snake[i].y) {
+    //         return true;
+    //     }
+    // }
 
     return false;
 }
@@ -111,10 +111,11 @@ int main() {
         werase(win);
         box(win, 0, 0);
 
-        drawSnake(win, snakeLength, snake);
-
-        wrefresh(win);
-        mssleep(delay);
+        if(running) {
+            drawSnake(win, snakeLength, snake);
+            wrefresh(win);
+            mssleep(delay);
+        }
     }
 
     mvwprintw(win, 5, 5, "GAME OVER!");
