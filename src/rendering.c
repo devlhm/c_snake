@@ -1,4 +1,5 @@
 #include <ncurses.h>
+#include <stdbool.h>
 #include "../include/rendering.h"
 #include "../include/vector2.h"
 
@@ -18,11 +19,12 @@ WINDOW *initialize()
     initscr();
     noecho();
     curs_set(false);
-    nodelay(stdscr, true);
     cbreak();
 
     WINDOW *win = newwin(WIN_HEIGHT, WIN_WIDTH, (getmaxy(stdscr) - WIN_HEIGHT) / 2, (getmaxx(stdscr) - WIN_WIDTH) / 2);
     box(win, 0, 0);
+    keypad(win, true);
+    nodelay(win, true);
     refresh();
 
     return win;

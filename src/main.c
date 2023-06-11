@@ -29,76 +29,96 @@ void moveSnake(int snakeLength, struct Vector2* snake, struct Vector2 direction)
 
 struct Vector2 handleInput(WINDOW *win) {
     int key = wgetch(win);
+    flushinp();
+    struct Vector2 newDirection;
 
-    mvwprintw(win, 5, 5, "%d", key);
-
-    struct Vector2 direction;
-
-    direction.x = 0;
-    direction.y = 0;
+    newDirection.x = 0;
+    newDirection.y = 0;
 
     switch(key) {
     case KEY_UP:
-        direction.y = 1; 
+    case 'w':
+        newDirection.y = -1; 
         break;
     case KEY_DOWN:
-        direction.y = -1;
+    case 's':
+        newDirection.y = 1;
         break;
     case KEY_LEFT:
-        direction.x = -1;
+    case 'a':
+        newDirection.x = -1;
         break;
     case KEY_RIGHT:
-        direction.x = 1;
-        break;
-    default:
-        ungetch(key);
+    case 'd':
+        newDirection.x = 1;
         break;
     }
 
-    return direction;
+    return newDirection;
 }
 
+bool checkGameOver(WINDOW *win, struct Vector2 *snake, int snakeLength) {
+    struct Vector2 head = snake[snakeLength - 1];
+
+    if(head.x >= getmaxx(win) || head.x <= 0 || head.y >= getmaxy(win) || head.y <= 0) {
+        return true;
+    }
+
+    for(int i = 0; i < snakeLength - 1; i++) {
+        if(head.x == snake[i].x && head.y == snake[i].y) {
+            return true;
+        }
+    }
+
+    return false;
+}
 
 int main() {
     WINDOW* win = initialize();
 
     int delay = (1.0 / (double) FPS) * 1000;
 
-    struct Vector2 direction;
-    direction.x = 1;
-    direction.y = 0;
-
     int snakeLength = 5;
     struct Vector2 *snake = malloc(sizeof(struct Vector2) * snakeLength);
 
     struct Vector2 startPos;
-    startPos.x = 5;
-    startPos.y = 5;
+    startPos.x = 10;
+    startPos.y = 10;
+
+    struct Vector2 direction;
+    direction.x = 1;
+    direction.y = 0;
 
     initializeSnake(snake, snakeLength, direction, startPos);
 
     bool running = true;
     while(running) {
-
         
+        struct Vector2 newDir = handleInput(win);
+
+        if((newDir.x != 0 || newDir.y != 0) && (direction.x * -1) != newDir.x && (direction.y * -1) != newDir.y) {
+            direction.x = newDir.x;
+            direction.y = newDir.y;
+        }
+
         //perform operations
         moveSnake(snakeLength, snake, direction);
+        running = !checkGameOver(win, snake, snakeLength);
 
         //render changes
         //drawApple()
+
         werase(win);
         box(win, 0, 0);
-        struct Vector2 newDir = handleInput(win);
-        if(newDir.x != 0 && newDir.y != 0) {
-            direction = newDir;
-        }
 
-        //drawSnake(win, snakeLength, snake);
+        drawSnake(win, snakeLength, snake);
 
         wrefresh(win);
         mssleep(delay);
     }
 
+    mvwprintw(win, 5, 5, "GAME OVER!");
+    wrefresh(win);
     getch();
     delwin(win);
     endwin();
