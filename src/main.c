@@ -8,26 +8,42 @@
 
 const int FPS = 8;
 
-void initializeSnake(struct Vector2* snake, int snakeLength, struct Vector2 direction, struct Vector2 startPos) {
-    for(int i = 0; i < snakeLength; i++) {
-        snake[i].x = startPos.x + (direction.x * i);
-        snake[i].y = startPos.y + (direction.y * i);
+void initializeSnake(dynamic_array *snake, int snakeLength, struct Vector2 direction, struct Vector2 startPos)
+{
+    for (int i = snakeLength - 1; i >= 0; i--)
+    {
+        struct Vector2 pos;
+        pos.x = direction.x * i;
+        pos.y = direction.y * i;
+
+        insertItem(snake, pos);
+
+        // snake[snakeLength - 1 - i].x = startPos.x + (direction.x * i);
+        // snake[snakeLength - 1 - i].y = startPos.y + (direction.y * i);
     }
 }
 
-void moveSnake(int snakeLength, struct Vector2* snake, struct Vector2 direction) {
-    struct Vector2 prevPartPos = snake[0];
-    snake[0].x += direction.x;
-    snake[0].y += direction.y;
+void moveSnake(int snakeLength, dynamic_array *snake, struct Vector2 direction)
+{
+    struct Vector2 prevPartPos = getItem(snake, 0);
+    
+    struct Vector2 newHead = prevPartPos;
 
-    for(int i = 1; i < snakeLength; i++) {
+    newHead.x += direction.x;
+    newHead.y += direction.y;
+
+    updateItem(snake, 0, newHead);
+
+    for (int i = 1; i < snakeLength; i++)
+    {
         struct Vector2 auxPos = prevPartPos;
-        prevPartPos = snake[i];
-        snake[i] = auxPos;
+        prevPartPos = getItem(snake, i);
+        updateItem(snake, i, auxPos);
     }
 }
 
-struct Vector2 handleInput(WINDOW *win) {
+struct Vector2 handleInput(WINDOW *win)
+{
     int key = wgetch(win);
     flushinp();
     struct Vector2 newDirection;
@@ -35,10 +51,11 @@ struct Vector2 handleInput(WINDOW *win) {
     newDirection.x = 0;
     newDirection.y = 0;
 
-    switch(key) {
+    switch (key)
+    {
     case KEY_UP:
     case 'w':
-        newDirection.y = -1; 
+        newDirection.y = -1;
         break;
     case KEY_DOWN:
     case 's':
@@ -57,29 +74,79 @@ struct Vector2 handleInput(WINDOW *win) {
     return newDirection;
 }
 
-bool checkGameOver(WINDOW *win, struct Vector2 *snake, int snakeLength) {
-    struct Vector2 head = snake[0];
+bool checkGameOver(WINDOW *win, dynamic_array *snake, int snakeLength)
+{
+    struct Vector2 head = getItem(snake, 0);
 
-    if(head.x >= getmaxx(win) || head.x <= 0 || head.y >= getmaxy(win) || head.y <= 0) {
+    if (head.x >= getmaxx(win) || head.x <= 0 || head.y >= getmaxy(win) || head.y <= 0)
         return true;
-    }
 
-    // for(int i = 1; i < snakeLength; i++) {
-    //     if(head.x == snake[i].x && head.y == snake[i].y) {
-    //         return true;
-    //     }
-    // }
+    for (int i = 1; i < snakeLength; i++)
+        if (head.x == getItem(snake, i).x && head.y == getItem(snake, i).y)
+            return true;
 
     return false;
 }
 
-int main() {
-    WINDOW* win = initialize();
+void setDirection(struct Vector2 *directionPtr, struct Vector2 newDir)
+{
+    if ((newDir.x != 0 || newDir.y != 0) && ((*directionPtr).x * -1) != newDir.x && ((*directionPtr).y * -1) != newDir.y)
+    {
+        (*directionPtr).x = newDir.x;
+        (*directionPtr).y = newDir.y;
+    }
+}
 
-    int delay = (1.0 / (double) FPS) * 1000;
+bool isSnakeAtPos(dynamic_array *snake, int snakeLength, struct Vector2 pos)
+{
+    for (int i = 0; i < snakeLength; i++)
+        if (getItem(snake, i).x == pos.x && getItem(snake, i).y == pos.y)
+            return true;
+
+    return false;
+}
+
+struct Vector2 setApplePos(WINDOW *win, dynamic_array *snake, int snakeLength)
+{
+    struct Vector2 applePos;
+
+    do
+    {
+        applePos.x = (rand() % (getmaxx(win))) + 1;
+        applePos.y = (rand() % (getmaxy(win))) + 1;
+    } while (isSnakeAtPos(snake, snakeLength, applePos));
+
+    return applePos;
+}
+
+void *growSnake(dynamic_array *snake, int *snakeLength, struct Vector2 direction)
+{
+    (*snakeLength)++;
+
+    struct Vector2 newPos = getItem(snake, (*snakeLength) - 2);
+    newPos.x -= direction.x;
+    newPos.y -= direction.y;
+
+    insertItem(snake, newPos);
+}
+
+void *checkAppleCollision(dynamic_array *snake, struct Vector2 applePos, int *snakeLength, struct Vector2 direction)
+{
+    struct Vector2 head = getItem(snake, 0);
+
+    if (head.x == applePos.x && head.y == applePos.y)
+        growSnake(snake, snakeLength, direction);
+}
+
+int main()
+{
+    WINDOW *win = initialize();
+
+    int delay = (1.0 / (double)FPS) * 1000;
 
     int snakeLength = 5;
-    struct Vector2 *snake = malloc(sizeof(struct Vector2) * snakeLength);
+    dynamic_array *snake;
+    arrayInit(&snake);
 
     struct Vector2 startPos;
     startPos.x = 10;
@@ -89,29 +156,29 @@ int main() {
     direction.x = 1;
     direction.y = 0;
 
+    struct Vector2 applePos = setApplePos(win, snake, snakeLength);
+
     initializeSnake(snake, snakeLength, direction, startPos);
 
     bool running = true;
-    while(running) {
-        
+    while (running)
+    {
         struct Vector2 newDir = handleInput(win);
 
-        if((newDir.x != 0 || newDir.y != 0) && (direction.x * -1) != newDir.x && (direction.y * -1) != newDir.y) {
-            direction.x = newDir.x;
-            direction.y = newDir.y;
-        }
+        setDirection(&direction, newDir);
 
-        //perform operations
+        // perform operations
         moveSnake(snakeLength, snake, direction);
-        running = !checkGameOver(win, snake, snakeLength);
+        // running = !checkGameOver(win, snake, snakeLength);
+        checkAppleCollision(snake, applePos, &snakeLength, direction);
 
-        //render changes
-        //drawApple()
-
+        // render changes
         werase(win);
         box(win, 0, 0);
 
-        if(running) {
+        if (running)
+        {
+            drawApple(win, applePos);
             drawSnake(win, snakeLength, snake);
             wrefresh(win);
             mssleep(delay);
@@ -120,6 +187,7 @@ int main() {
 
     mvwprintw(win, 5, 5, "GAME OVER!");
     wrefresh(win);
+    mssleep(1000);
     getch();
     delwin(win);
     endwin();

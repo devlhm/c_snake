@@ -10,8 +10,12 @@ void drawSnake(WINDOW *win, int snakeLength, struct Vector2 *snake)
 {
     for (int i = 0; i < snakeLength; i++)
     {
-        mvwprintw(win, snake[i].y, snake[i].x, ".");
+        mvwprintw(win, snake[i].y, snake[i].x, "#");
     }
+}
+
+void drawApple(WINDOW *win, struct Vector2 applePos) {
+    mvwprintw(win, applePos.y, applePos.x, "@");
 }
 
 WINDOW *initialize()
