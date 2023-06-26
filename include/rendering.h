@@ -3,12 +3,13 @@
 
 #include <ncurses.h>
 #include "./vector2.h"
+#include "./util.h"
 
 extern const int WIN_HEIGHT;
 extern const int WIN_WIDTH;
 
-void drawSnake(WINDOW *win, int snakeLength, struct Vector2 *snake);
-void drawApple(WINDOW *win, struct Vector2 applePos);
+void drawSnake(WINDOW *win, dynamic_array *snake);
+void drawApple(WINDOW *win, Vector2 applePos);
 WINDOW* initialize();
 
 #endif

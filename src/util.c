@@ -10,43 +10,29 @@ void arrayInit(dynamic_array** arr_ptr, int size)
     container = (dynamic_array*)malloc(sizeof(dynamic_array));
   
     container->size = 0;
-    container->capacity = size;
-    container->array = (int *)malloc(size * sizeof(struct Vector2));
+    container->capacity = size*2;
+    container->array = (Vector2 *)malloc(container->capacity * sizeof(Vector2));
   
     *arr_ptr = container;
 }
   
-void insertItem(dynamic_array* container, struct Vector2 item)
+void insertItem(dynamic_array* container, Vector2 item)
 {
     if (container->size == container->capacity) {
-        int *temp = container->array;
         container->capacity <<= 1;
-        container->array = realloc(container->array, container->capacity * sizeof(struct Vector2));
-        if(!container->array) {
-            printf("Out of Memory\n");
-            container->array = temp;
-            return;
-        }
+        container->array = (Vector2*) realloc(container->array, container->capacity * sizeof(Vector2));
     }
+
     container->array[container->size++] = item;
 }
   
-struct Vector2 getItem(dynamic_array* container, int index)
+Vector2 getItem(dynamic_array* container, int index)
 {
-    if(index >= container->size) {
-        printf("Index Out of Bounds\n");
-        return -1;
-    }
     return container->array[index];
 }
   
-void updateItem(dynamic_array* container, int index, struct Vector2 item)
+void updateItem(dynamic_array* container, int index, Vector2 item)
 {
-    if (index >= container->size) {
-        printf("Index Out of Bounds\n");
-        return;
-    }
-
     container->array[index] = item;
 }
   

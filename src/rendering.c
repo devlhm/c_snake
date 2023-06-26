@@ -2,19 +2,20 @@
 #include <stdbool.h>
 #include "../include/rendering.h"
 #include "../include/vector2.h"
+#include "../include/util.h"
 
 const int WIN_HEIGHT = 25;
 const int WIN_WIDTH = 80;
 
-void drawSnake(WINDOW *win, int snakeLength, struct Vector2 *snake)
+void drawSnake(WINDOW *win, dynamic_array *snake)
 {
-    for (int i = 0; i < snakeLength; i++)
+    for (int i = 0; i < (int) snake->size; i++)
     {
-        mvwprintw(win, snake[i].y, snake[i].x, "#");
+        mvwprintw(win, getItem(snake, i).y, getItem(snake, i).x, "#");
     }
 }
 
-void drawApple(WINDOW *win, struct Vector2 applePos) {
+void drawApple(WINDOW *win, Vector2 applePos) {
     mvwprintw(win, applePos.y, applePos.x, "@");
 }
 
