@@ -4,7 +4,9 @@
 Simple terminal snake game made in C using ncurses for learning purposes
 
 
+## Prerequisites
 
+ncurses and cmake
 
 ## Build
 
