@@ -1,7 +1,7 @@
 #ifndef VECTOR2_H
 #define VECTOR2_H
 
-typedef struct Vector2Aux {
+typedef struct {
     int x;
     int y;
 } Vector2;
